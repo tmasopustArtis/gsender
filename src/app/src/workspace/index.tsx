@@ -414,7 +414,7 @@ const Workspace = () => {
                 <ConfirmationDialog />
                 <div className="sr-only" role="status" aria-live="polite"></div>
                 <DataCollection />
-                <div className="flex h-full no-scrollbar">
+                <div className="flex h-full min-h-0 no-scrollbar">
                     <Sidebar />
                     <Alerts />
                     <Helper />

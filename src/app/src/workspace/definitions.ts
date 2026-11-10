@@ -39,6 +39,16 @@ export interface Workspace {
     safeRetractHeight: number;
     customDecimalPlaces: number;
     jobsFinished: number;
+    // Job Queue settings (shared Orders folder or the central order tool)
+    jobQueue: {
+        ordersPath: string;
+        machineName: string;
+        carvedPath: string;
+        source: 'folder' | 'central';
+        centralUrl: string;
+        centralKey: string;
+        lastSize: string;
+    };
     jobsCancelled: number;
     timeSpentRunning: number;
     longestTimeRun: number;

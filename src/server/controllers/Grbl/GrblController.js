@@ -22,6 +22,7 @@
  *
  */
 
+import { getVisibleMacros } from "../../lib/macroStore";
 import ensureArray from "ensure-array";
 import * as parser from "gcode-parser";
 import _ from "lodash";
@@ -2220,7 +2221,7 @@ class GrblController {
 					callback = context;
 					context = {};
 				}
-				const macros = config.get("macros");
+				const macros = getVisibleMacros();
 				const macro = _.find(macros, { id: id });
 
 				if (!macro) {
@@ -2240,7 +2241,7 @@ class GrblController {
 					context = {};
 				}
 
-				const macros = config.get("macros");
+				const macros = getVisibleMacros();
 				const macro = _.find(macros, { id: id });
 
 				if (!macro) {

@@ -51,6 +51,7 @@ import { useSelector } from 'react-redux';
 import { toast } from 'app/lib/toaster';
 import get from 'lodash/get';
 import { Tooltip } from 'app/components/Tooltip';
+import { JobsButton } from './JobQueue/JobsButton';
 
 const ButtonControlGroup = () => {
     const posthog = usePostHog();
@@ -227,6 +228,8 @@ const ButtonControlGroup = () => {
                 disabled={!canClick}
                 className="h-full px-4 rounded-none portrait:text-xl portrait:px-6"
             />
+            <Divider />
+            <JobsButton />
             <Divider />
             <div className="grid grid-cols-[60px_2px_60px_2px_60px] h-full portrait:grid-cols-[80px_2px_80px_2px_80px]">
                 <DropdownMenu>

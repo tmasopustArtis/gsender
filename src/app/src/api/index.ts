@@ -166,6 +166,47 @@ const watch = {
 };
 
 //
+// Job queue (shared Orders folder)
+//
+export interface JobQueueTarget {
+    ordersPath: string;
+    machineName: string;
+    // Optional; defaults to a "Carved" folder next to the Orders folder.
+    carvedPath?: string;
+    // 'central' = the central order tool (ArtisDesigns API); otherwise the shared Orders folder.
+    source?: 'folder' | 'central';
+    centralUrl?: string;
+    centralKey?: string;
+}
+
+const jobQueue = {
+    list: (target: JobQueueTarget): Promise<AxiosResponse> =>
+        authrequest.post('/api/jobqueue/list', target),
+    claim: (
+        target: JobQueueTarget & { order: string; file?: string },
+    ): Promise<AxiosResponse> => authrequest.post('/api/jobqueue/claim', target),
+    complete: (
+        target: JobQueueTarget & {
+            order: string;
+            file?: string;
+            durationSeconds?: number;
+            finishedAt?: string;
+        },
+    ): Promise<AxiosResponse> =>
+        authrequest.post('/api/jobqueue/complete', target),
+    setMeta: (
+        target: JobQueueTarget & {
+            order: string;
+            meta: { material: string; size: string; color: string };
+        },
+    ): Promise<AxiosResponse> => authrequest.post('/api/jobqueue/meta', target),
+    release: (
+        target: JobQueueTarget & { order: string },
+    ): Promise<AxiosResponse> =>
+        authrequest.post('/api/jobqueue/release', target),
+};
+
+//
 // Users
 //
 const users = {
@@ -293,6 +334,16 @@ const macros = {
 
     delete: (id: string): Promise<AxiosResponse> => {
         return authrequest.delete('/api/macros/' + id);
+    },
+
+    // Where macros are stored: this computer, or one shared file (e.g. on the NAS)
+    location: (): Promise<AxiosResponse> => {
+        return authrequest.get('/api/macros-location');
+    },
+
+    // file: shared file path ('' = this computer only); machine: this machine's name. Either may be left out.
+    setLocation: (options: { file?: string; machine?: string }): Promise<AxiosResponse> => {
+        return authrequest.post('/api/macros-location', options);
     },
 };
 
@@ -464,6 +515,7 @@ export default {
     downloadGCode,
     controllers,
     watch,
+    jobQueue,
     users,
     events,
     remoteSetting,

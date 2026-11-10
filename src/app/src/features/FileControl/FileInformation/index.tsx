@@ -6,6 +6,7 @@ import { Switch } from 'app/components/shadcn/Switch';
 
 import Size from './Size';
 import Info from './Info';
+import SizeHint from './SizeHint';
 import LoadingAnimation from './LoadingAnimation';
 import {
     Tooltip,
@@ -26,13 +27,14 @@ import api from 'app/api';
 import isElectron from 'is-electron';
 import { ScrollArea } from 'app/components/shadcn/ScrollArea';
 import { LiaFileUploadSolid } from 'react-icons/lia';
+import JobQueue from '../JobQueue';
 
 interface Props {
     handleRecentFileUpload: (file: RecentFile, isRecentFile?: boolean) => void;
 }
 
 const FileInformation: React.FC<Props> = ({ handleRecentFileUpload }) => {
-    const { name, size, total, path, fileLoaded, fileProcessing } =
+    const { name, fileLoaded, fileProcessing } =
         useTypedSelector((state) => state.file);
 
     const [toggleInfo, setToggleInfo] = useState(false);
@@ -40,6 +42,7 @@ const FileInformation: React.FC<Props> = ({ handleRecentFileUpload }) => {
     const [recentFiles, setRecentFiles] =
         useState<RecentFile[]>(getRecentFiles());
     const [lastJob, setLastJob] = useState<Job>(null);
+    const [showQueue, setShowQueue] = useState(!isElectron());
 
     const fetchJobs = async () => {
         const jobStatRes = await api.jobStats.fetch();
@@ -98,17 +101,32 @@ const FileInformation: React.FC<Props> = ({ handleRecentFileUpload }) => {
     if (!fileLoaded) {
         return (
             <div
-                className={cx('mt-3 h-full', {
-                    'grid grid-cols-[3fr_2fr] gap-8 portrait:flex':
-                        isElectron(),
-                    'flex justify-center': !isElectron(),
+                className={cx('mt-3 h-full w-full grid grid-cols-[3fr_2fr] gap-8 portrait:flex', {
+                    // let the queue use the full height of the area instead of a fixed box
+                    'grid-rows-[minmax(0,1fr)]': showQueue,
                 })}
             >
-                {isElectron() && (
+                {showQueue && (
+                    <JobQueue
+                        // with no file loaded there is no file info beside it, so use the whole width
+                        fullWidth={!fileLoaded}
+                        onShowRecent={
+                            isElectron() ? () => setShowQueue(false) : undefined
+                        }
+                    />
+                )}
+                {isElectron() && !showQueue && (
                     <div className="flex flex-col gap-2 max-xl:gap-1 portrait:w-3/4">
-                        <span className="ml-6 dark:text-white">
-                            Recent Files
-                        </span>
+                        <div className="flex items-center justify-between ml-6 mr-2 dark:text-white">
+                            <span>Recent Files</span>
+                            <button
+                                type="button"
+                                className="text-blue-500 underline"
+                                onClick={() => setShowQueue(true)}
+                            >
+                                Job Queue
+                            </button>
+                        </div>
                         <ScrollArea className="ml-2 px-2 h-28 max-xl:h-[6.5rem] portrait:mb-5 bg-white dark:bg-dark rounded-xl border-2 dark:border-dark-lighter">
                             <div className="grid divide-y items-center mr-2">
                                 {recentFiles.map(
@@ -239,18 +257,6 @@ const FileInformation: React.FC<Props> = ({ handleRecentFileUpload }) => {
         );
     }
 
-    const formatFileSize = (size: number): string => {
-        if (size < 1024) {
-            return `${size} Bytes`;
-        }
-
-        if (size < 1024 * 1024) {
-            return `${(size / 1024).toFixed(0)} KB`;
-        }
-
-        return `${(size / (1024 * 1024)).toFixed(0)} MB`;
-    };
-
     const splitFileNameAndExtension = (name: string = '') => {
         if (!name) return ['', ''];
 
@@ -261,7 +267,6 @@ const FileInformation: React.FC<Props> = ({ handleRecentFileUpload }) => {
         return [name, ''];
     };
 
-    const fileSize = formatFileSize(size);
     const ToggleOutput = toggleInfo ? Info : Size;
 
     const [fileName, extension] = splitFileNameAndExtension(name);
@@ -284,19 +289,7 @@ const FileInformation: React.FC<Props> = ({ handleRecentFileUpload }) => {
                 </Tooltip>
             </TooltipProvider>
 
-            <div className="text-gray-500 flex gap-1 text-xs">
-                <span>{fileSize}</span>
-
-                <span>({total} lines)</span>
-            </div>
-
-            {path && (
-                <div className="text-gray-500 text-xs max-w-full flex flex-row">
-                    <span className="inline-block text-ellipsis overflow-hidden whitespace-nowrap">
-                        {path}
-                    </span>
-                </div>
-            )}
+            <SizeHint />
 
             <div className="flex gap-4 justify-center items-center w-full">
                 <div className="flex flex-col items-center flex-shrink-0">

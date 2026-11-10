@@ -60,6 +60,16 @@ const defaultState: State = {
         customDecimalPlaces: 0,
         portraitMacroBar: false,
         jobsFinished: 0,
+        // Job Queue (shared Orders folder). Keys must exist here or they are dropped when the store reloads.
+        jobQueue: {
+            ordersPath: '',
+            machineName: '',
+            carvedPath: '',
+            source: 'folder',
+            centralUrl: '',
+            centralKey: '',
+            lastSize: '',
+        },
         jobsCancelled: 0,
         timeSpentRunning: 0,
         longestTimeRun: 0,

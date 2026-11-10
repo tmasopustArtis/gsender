@@ -26,7 +26,7 @@ import castArray from 'lodash/castArray';
 import isPlainObject from 'lodash/isPlainObject';
 import uuid from 'uuid';
 import settings from '../config/settings';
-import config from '../services/configstore';
+import { getMacros, getMachine, setMachine, isVisibleHere, setMacros, getSharedFile, isSharedAvailable, useSharedFile } from '../lib/macroStore';
 import { getPagingRange } from './paging';
 import {
     ERR_BAD_REQUEST,
@@ -34,10 +34,9 @@ import {
     ERR_INTERNAL_SERVER_ERROR
 } from '../constants';
 
-const CONFIG_KEY = 'macros';
 
 const getSanitizedRecords = () => {
-    const records = castArray(config.get(CONFIG_KEY, []));
+    const records = castArray(getMacros());
 
     let shouldUpdate = false;
     for (let i = 0; i < records.length; ++i) {
@@ -65,14 +64,20 @@ const getSanitizedRecords = () => {
 
     if (shouldUpdate) {
         // Pass `{ silent changes }` will suppress the change event
-        config.set(CONFIG_KEY, records, { silent: true });
+        try {
+            setMacros(records, { silent: true });
+        } catch (err) {
+            // shared file unreachable: list what we have, the fix is saved on the next successful change
+        }
     }
 
     return records;
 };
 
 export const fetch = (req, res) => {
-    const records = getSanitizedRecords();
+    // other machines' macros (name ends in _1, _2 ...) stay out of this machine's list
+    const machine = getMachine();
+    const records = getSanitizedRecords().filter(r => isVisibleHere(r, machine));
     const paging = !!req.query.paging;
 
     if (paging) {
@@ -152,12 +157,12 @@ export const create = (req, res) => {
         };
 
         records.push(record);
-        config.set(CONFIG_KEY, records);
+        setMacros(records);
 
         res.send({ err: null, macro: record });
     } catch (err) {
         res.status(ERR_INTERNAL_SERVER_ERROR).send({
-            msg: 'Failed to save ' + JSON.stringify(settings.rcfile)
+            msg: err.message || ('Failed to save ' + JSON.stringify(settings.rcfile))
         });
     }
 };
@@ -222,12 +227,12 @@ export const update = (req, res) => {
         record.column = String(column || '');
         record.rowIndex = Number(rowIndex || 0);
 
-        config.set(CONFIG_KEY, records);
+        setMacros(records);
 
         res.send({ err: null });
     } catch (err) {
         res.status(ERR_INTERNAL_SERVER_ERROR).send({
-            msg: 'Failed to save ' + JSON.stringify(settings.rcfile)
+            msg: err.message || ('Failed to save ' + JSON.stringify(settings.rcfile))
         });
     }
 };
@@ -248,12 +253,30 @@ export const __delete = (req, res) => {
         const filteredRecords = records.filter(record => {
             return record.id !== id;
         });
-        config.set(CONFIG_KEY, filteredRecords);
+        setMacros(filteredRecords);
 
         res.send({ err: null });
     } catch (err) {
         res.status(ERR_INTERNAL_SERVER_ERROR).send({
-            msg: 'Failed to save ' + JSON.stringify(settings.rcfile)
+            msg: err.message || ('Failed to save ' + JSON.stringify(settings.rcfile))
         });
+    }
+};
+
+export const location = (req, res) => {
+    res.send({ file: getSharedFile(), shared: Boolean(getSharedFile()), available: isSharedAvailable(), machine: getMachine() });
+};
+
+export const setLocation = (req, res) => {
+    try {
+        const { file, machine } = { ...req.body };
+        if (typeof machine === 'string') {
+            setMachine(machine);
+        }
+        // `file` is optional: sending only `machine` just records this machine's name
+        const result = typeof file === 'string' ? useSharedFile(file) : { file: getSharedFile(), created: false };
+        res.send({ ...result, shared: Boolean(result.file), available: true, machine: getMachine() });
+    } catch (err) {
+        res.status(ERR_BAD_REQUEST).send({ msg: err.message });
     }
 };

@@ -1,6 +1,6 @@
 {
-  "name": "gSender",
-  "version": "1.6.5",
+  "name": "gSender-modified",
+  "version": "1.6.5modified",
   "description": "Electron sender for GRBL based CNC machines",
   "author": {
     "name": "Sienci Labs <hi@sienci.com>",
@@ -19,7 +19,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Sienci-Labs/gsender"
+    "url": "https://github.com/tmasopustArtis/gsender.git"
   },
   "license": "MIT",
   "engines": {

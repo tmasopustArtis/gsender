@@ -9,6 +9,8 @@ import { uploadGcodeFileToServer } from 'app/lib/fileupload';
 
 import ButtonControlGroup from './ButtonControlGroup';
 import FileInformation from './FileInformation';
+import { JobQueueProvider } from './JobQueue/JobQueueContext';
+import { JobQueueDialog } from './JobQueue/JobQueueDialog';
 import { updateFileInfo } from 'app/store/redux/slices/fileInfo.slice';
 import {
     addRecentFile,
@@ -116,16 +118,19 @@ const FileControl = () => {
     };
 
     return (
-        <Widget>
-            <Widget.Content>
-                <div className="w-full flex flex-col items-center">
-                    <ButtonControlGroup />
-                    <FileInformation
-                        handleRecentFileUpload={handleRecentFileUpload}
-                    />
-                </div>
-            </Widget.Content>
-        </Widget>
+        <JobQueueProvider>
+            <Widget>
+                <Widget.Content>
+                    <div className="w-full flex flex-col items-center">
+                        <ButtonControlGroup />
+                        <FileInformation
+                            handleRecentFileUpload={handleRecentFileUpload}
+                        />
+                    </div>
+                </Widget.Content>
+            </Widget>
+            <JobQueueDialog />
+        </JobQueueProvider>
     );
 };
 

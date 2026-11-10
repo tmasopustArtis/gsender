@@ -352,6 +352,8 @@ const appMain = () => {
         // Macros
         app.get(urljoin(settings.route, 'api/macros'), api.macros.fetch);
         app.post(urljoin(settings.route, 'api/macros'), api.macros.create);
+        app.get(urljoin(settings.route, 'api/macros-location'), api.macros.location);
+        app.post(urljoin(settings.route, 'api/macros-location'), api.macros.setLocation);
         app.get(urljoin(settings.route, 'api/macros/:id'), api.macros.read);
         app.put(urljoin(settings.route, 'api/macros/:id'), api.macros.update);
         app.delete(urljoin(settings.route, 'api/macros/:id'), api.macros.__delete);
@@ -376,6 +378,13 @@ const appMain = () => {
         app.post(urljoin(settings.route, 'api/watch/files'), api.watch.getFiles);
         app.get(urljoin(settings.route, 'api/watch/file'), api.watch.readFile);
         app.post(urljoin(settings.route, 'api/watch/file'), api.watch.readFile);
+
+        // Job queue (shared Orders folder)
+        app.post(urljoin(settings.route, 'api/jobqueue/list'), api.jobqueue.list);
+        app.post(urljoin(settings.route, 'api/jobqueue/claim'), api.jobqueue.claim);
+        app.post(urljoin(settings.route, 'api/jobqueue/complete'), api.jobqueue.complete);
+        app.post(urljoin(settings.route, 'api/jobqueue/release'), api.jobqueue.release);
+        app.post(urljoin(settings.route, 'api/jobqueue/meta'), api.jobqueue.setMeta);
 
         // Metrics
         app.get(urljoin(settings.route, 'api/metrics/collectUserData'), api.metrics.getCollectDataStatus);

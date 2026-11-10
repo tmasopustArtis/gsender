@@ -41,6 +41,7 @@ import * as maintenance from './api.maintenance';
 import * as alarmList from './api.alarmList';
 import * as releaseNotes from './api.releasenotes';
 import * as preferences from './api.preferences';
+import * as jobqueue from './api.jobqueue';
 
 export {
     version,
@@ -48,6 +49,7 @@ export {
     gcode,
     controllers,
     watch,
+    jobqueue,
     commands,
     events,
     machines,

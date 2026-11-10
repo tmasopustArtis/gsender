@@ -11,10 +11,14 @@ interface TabItem {
 
 interface TabbedProps {
     items: TabItem[];
+    // label of the tab to show first (falls back to the first tab)
+    defaultTab?: string;
 }
 
-export const Tabs = ({ items = [] }: TabbedProps) => {
-    const [activeTab, setActiveTab] = useState(items[0]?.label);
+export const Tabs = ({ items = [], defaultTab }: TabbedProps) => {
+    const [activeTab, setActiveTab] = useState(
+        items.find((item) => item.label === defaultTab)?.label ?? items[0]?.label,
+    );
     const tabsRef = useRef<HTMLDivElement>(null);
     const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -36,7 +40,9 @@ export const Tabs = ({ items = [] }: TabbedProps) => {
 
         // if the active tab doesnt exist in the tabs list anymore, default to first tab
         if (!items.find((value) => value.label === activeTab)) {
-            setActiveTab(items[0].label);
+            setActiveTab(
+                items.find((item) => item.label === defaultTab)?.label ?? items[0].label,
+            );
         }
     }, [items]);
 

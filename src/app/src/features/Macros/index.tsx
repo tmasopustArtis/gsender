@@ -17,6 +17,7 @@ import pubsub from 'pubsub-js';
 
 import Macro from './Macro';
 import MacroForm from './MacroForm';
+import { BigMacros } from './BigMacros';
 import {
     GRBL,
     GRBLHAL,
@@ -391,6 +392,11 @@ const MacroWidget = ({
 
     useEffect(() => {
         fetchMacros();
+        // the macro location was changed in the Jobs settings
+        const token = pubsub.subscribe('macros:reload', fetchMacros);
+        return () => {
+            pubsub.unsubscribe(token);
+        };
     }, []);
 
     const canClick = () => {
@@ -490,6 +496,12 @@ const MacroWidget = ({
                 />
 
                 <div className="flex justify-center gap-2 mt-2 w-full min-h-8">
+                    <BigMacros
+                        macros={macros}
+                        canClick={canClick()}
+                        onRun={actions.runMacro}
+                    />
+
                     <Button
                         onClick={actions.openAddMacroModal}
                         className="flex flex-1 justify-center items-center h-8 text-sm"
